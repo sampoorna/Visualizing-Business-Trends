@@ -40,22 +40,78 @@ def curve_fit(x, y):
 
 # Ask user whether to overlay event info or not	
 overlay_events_flag = 's'
-while (overlay_events_flag != 'y' and overlay_events_flag != 'n'):
+invalid_response = True
+
+while (invalid_response):
 	overlay_events_flag = raw_input("Overlay event information? (Y/N)").lower()
+	if (overlay_events_flag != 'y' and overlay_events_flag != 'n'):
+		invalid_response = True
+	else:
+		invalid_response = False
 
 # Take file names as command line input
-filename = raw_input("Enter the file name that contains MRR/installs/uninstalls information (include the extension, for example: data.csv): ")
+invalid_response = True
+
+while (invalid_response):
+	filename = raw_input("Enter the file name (case sensitive) that contains MRR/installs/uninstalls information (include the extension, for example: data.csv): ")
+	
+	# Opening and reading data files
+	try:
+		f = open(filename, 'rU')
+		stats = csv.reader(f, delimiter=',')
+		data_headers = next(stats, None)  # Read the headers
+		invalid_response = False
+	except:
+		print "Could not find file. Please ensure that file exists and file name was correctly input - remember, the name is case sensitive!"
+
+invalid_response = True
 
 if overlay_events_flag == 'y':
-	filename_milestones = raw_input("Enter the file name that contains event information (include the extension, for example: events.csv): ")
+	while (invalid_response):
+		filename_milestones = raw_input("Enter the file name (case sensitive) that contains milestones/notable events information (include the extension, for example: events.csv): ")
+		
+		# Opening and reading data files
+		try:
+			f_milestones = open(filename_milestones, 'rU')
+			event_data = csv.reader(f_milestones, delimiter=',')
+			event_data_headers = next(event_data, None)  # Read the headers
+			invalid_response = False
+		except:
+			print "Could not find file. Please ensure that file exists and file name was correctly input - remember, the name is case sensitive!"	
 
-# Opening and reading data files
-f = open(filename, 'rU')
-stats = csv.reader(f, delimiter=',')
-data_headers = next(stats, None)  # Read the headers
+invalid_response = True
 
-range_start = []
-range_end = []
+while (invalid_response):
+	plot_date_start = raw_input("Plot data on the graph from date (DD/MM/YY): ")
+	
+	try: 
+		plot_date_start = parse(plot_date_start)
+		invalid_response = False
+	except:
+		print "Input does not appear to be a date :S Please try again!"
+		
+invalid_response = True
+
+while (invalid_response):
+	plot_date_end = raw_input("Plot data on the graph till date (DD/MM/YY): ")
+	
+	try: 
+		plot_date_end = parse(plot_date_end)
+		invalid_response = False
+	except:
+		print "Input does not appear to be a date :S Please try again!"
+
+# Ask user which metric to plot on which axis
+print "Found following data headers: "
+for i in range(len(data_headers)):
+	print "(" + str(i + 1) + ") " + data_headers[i]
+
+date_column_index = input("Choose column that contains X-axis values (dates): ") - 1
+first_axis_columns = raw_input("Choose column(s) that contain(s) first Y-axis values (separate numbers by space): ")
+second_axis_columns = raw_input("Choose column(s) that contain(s) second Y-axis values (separate numbers by space): ")
+	
+date_range_start = []
+date_range_end = []
 measures_to_plot = [[] for i in range(len(data_headers) - 1)] # Initialize array to appropriate size
 net_mrr = []
 uninstalls = []
@@ -71,12 +127,12 @@ data_legends = data_headers[1:]
 # Parse and process data
 for line in stats:
 	# Parse date fields as dates
-	rs = parse(line[0].split('-')[0].strip())
+	rs = parse(line[date_column_index].split('-')[0].strip())
 	#re = datetime.strptime(line[0].split('-')[1].strip(), '%B %d, %Y')
-	re = parse(line[0].split('-')[1].strip())
+	re = parse(line[date_column_index].split('-')[1].strip())
 	#re = re.replace(year = 2017)
-	range_start.append(rs)
-	range_end.append(re)
+	date_range_start.append(rs)
+	date_range_end.append(re)
 	
 	# Read data fields line by line
 	for metric in range(len(data_headers) - 1):
@@ -85,7 +141,7 @@ for line in stats:
 			data_index_second_axis = metric
 		measures_to_plot[metric].append(float(value.replace(',', '')))
 		
-fdts = dates.date2num(range_end) # Convert dates to numbers
+fdts = dates.date2num(date_range_end) # Convert dates to numbers
 hfmt = dates.DateFormatter('%b %d') # Format dates
 fig = plt.figure()
 ax = fig.add_subplot(111)
