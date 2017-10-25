@@ -43,12 +43,13 @@ overlay_events_flag = 's'
 while (overlay_events_flag != 'y' and overlay_events_flag != 'n'):
 	overlay_events_flag = raw_input("Overlay event information? (Y/N)").lower()
 
-# Take filename as command line input
-filename = raw_input("Enter the file name that contains MRR/installs/uninstalls information (include the extension, like .csv): ")
+# Take file names as command line input
+filename = raw_input("Enter the file name that contains MRR/installs/uninstalls information (include the extension, for example: data.csv): ")
+
+if overlay_events_flag == 'y':
+	filename_milestones = raw_input("Enter the file name that contains event information (include the extension, for example: events.csv): ")
 
 # Opening and reading data files
-#filename = "newmilestones.csv"
-filename_milestones = "Milestone updated.csv"
 f = open(filename, 'rU')
 stats = csv.reader(f, delimiter=',')
 data_headers = next(stats, None)  # Read the headers
