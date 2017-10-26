@@ -112,7 +112,11 @@ first_axis_columns = [int(i) - 1 for i in first_axis_columns.split(' ')]
 second_axis_columns = raw_input("Choose column(s) that contain(s) second Y-axis values (separate numbers by space): ")
 second_axis_columns = [int(i) - 1 for i in second_axis_columns.split(' ')]
 	
-columns_to_plot = set().union(first_axis_columns, second_axis_columns)
+if second_axis_columns[0] != -1:
+	columns_to_plot = set().union(first_axis_columns, second_axis_columns)
+else:
+	columns_to_plot = first_axis_columns
+	
 date_range_start = []
 date_range_end = []
 measures_to_plot = [[] for i in range(len(data_headers) - 1)] # Initialize array to appropriate size
@@ -147,18 +151,18 @@ fdts = dates.date2num(date_range_end) # Convert dates to numbers
 hfmt = dates.DateFormatter('%b %d') # Format dates
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax2 = ax.twinx()
 
+if second_axis_columns[0] != -1:
+	ax2 = ax.twinx()
 
-for metric in range(len(data_headers) - 1):
+for metric in columns_to_plot:
 	result = curve_fit(fdts, measures_to_plot[metric]) # Fit curve to data points to estimate trend
-	if metric == data_index_second_axis:
-		ax.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
-		ax.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
-		#print result[1]
-	else:
+	if second_axis_columns[0] != -1 and metric in second_axis_columns:
 		ax2.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
 		ax2.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
+	else:
+		ax.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
+		ax.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
 		y_label += data_legends[metric].lower() + ', ' # Construct label for Y axis
 
 ### Graph legends etc
@@ -166,22 +170,22 @@ ax.set_xlabel('Week ending in') # Setting X axis label
 plt.xticks(fdts) # Place X axis ticks for every week
 ax.xaxis.set_major_formatter(hfmt) # Format X tick labels
 ax.set_ylabel('Dollar amounts') # Setting Y axis label: remove the last comma
-ax2.set_ylabel(y_label[:-2] + " (weekly)") # Setting the second Y axis label
+
+if second_axis_columns[0] != -1:
+	ax2.set_ylabel(y_label[:-2] + " (weekly)") # Setting the second Y axis label
+
 # Place legends on the graph
 ax.legend(loc = 6)
-ax2.legend(loc = 2)
 ax.set_ylim(ymin=0)
-ax2.set_ylim(ymin=0)
+
+if second_axis_columns[0] != -1:
+	ax2.legend(loc = 2)
+	ax2.set_ylim(ymin=0)
 
 if overlay_events_flag == 'y': # If overlaying events
 
-	# Opening and reading file
-	f = open(filename_milestones, 'rU')
-	stats = csv.reader(f, delimiter=',')
-	headers = next(stats, None)  # Skip the headers
-
-	range_start_ms = []
-	range_end_ms = []
+	date_range_start_events = []
+	date_range_end_events = []
 	milestones = []
 	classes = []
 	y = []
@@ -192,24 +196,27 @@ if overlay_events_flag == 'y': # If overlaying events
 	indexes = {}
 	
 	# To use header names to index
-	for h in range(len(headers)):
-		indexes[headers[h]] = h
+	for h in range(len(event_data_headers)):
+		indexes[event_data_headers[h]] = h
 	
 	# Sort events by degree of severity
-	stats = list(stats)
-	stats.sort(key=lambda x: int(x[indexes['Severity']]))
+	event_data = list(event_data)
+	event_data.sort(key=lambda x: int(x[indexes['Severity']]))
 
 	# Parse and process data
-	for line in stats:
+	for line in event_data:
 		# Parse date fields as dates
 		rs = parse(line[indexes['Start Date']].strip())
-		print rs
+
 		if line[indexes['End Date']].strip().lower() == "ongoing":
 			re = rs
 		else:
 			re = parse(line[indexes['End Date']].strip()) 
-		range_start_ms.append(rs)
-		range_end_ms.append(re)	
+			
+		if (rs >= plot_date_start):
+			date_range_start_events.append(rs)
+		if (re <= plot_date_end):
+			date_range_end_events.append(re)
 		
 		# Assign marker colours according to degree of severity
 		classes.append(line[indexes['Severity']])
@@ -239,8 +246,8 @@ if overlay_events_flag == 'y': # If overlaying events
 		elif (re - rs).days > 3: # If long duration events, place text on the graph itself
 			ax2.text(dates.date2num(re) + 1, y_coord, line[indexes['Milestones']], fontsize=7)
 
-	fdts_start = dates.date2num(range_start_ms) # Convert start dates to numbers
-	fdts_end = dates.date2num(range_end_ms) # Convert end dates to numbers
+	fdts_start = dates.date2num(date_range_start_events) # Convert start dates to numbers
+	fdts_end = dates.date2num(date_range_end_events) # Convert end dates to numbers
 	hfmt = dates.DateFormatter('%b %d') # Format dates
 	for hl in range(len(y)): # Draw lines matching duration of events
 		ax2.hlines(y[hl], fdts_start[hl], fdts_end[hl], colors = colormap[hl], linewidth = 3, label = milestones[hl])
