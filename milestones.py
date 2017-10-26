@@ -108,8 +108,11 @@ for i in range(len(data_headers)):
 
 date_column_index = input("Choose column that contains X-axis values (dates): ") - 1
 first_axis_columns = raw_input("Choose column(s) that contain(s) first Y-axis values (separate numbers by space): ")
+first_axis_columns = [int(i) - 1 for i in first_axis_columns.split(' ')]
 second_axis_columns = raw_input("Choose column(s) that contain(s) second Y-axis values (separate numbers by space): ")
+second_axis_columns = [int(i) - 1 for i in second_axis_columns.split(' ')]
 	
+columns_to_plot = set().union(first_axis_columns, second_axis_columns)
 date_range_start = []
 date_range_end = []
 measures_to_plot = [[] for i in range(len(data_headers) - 1)] # Initialize array to appropriate size
@@ -128,18 +131,17 @@ data_legends = data_headers[1:]
 for line in stats:
 	# Parse date fields as dates
 	rs = parse(line[date_column_index].split('-')[0].strip())
-	#re = datetime.strptime(line[0].split('-')[1].strip(), '%B %d, %Y')
 	re = parse(line[date_column_index].split('-')[1].strip())
-	#re = re.replace(year = 2017)
-	date_range_start.append(rs)
-	date_range_end.append(re)
 	
-	# Read data fields line by line
-	for metric in range(len(data_headers) - 1):
+	if (rs >= plot_date_start):
+		date_range_start.append(rs)
+	if (re <= plot_date_end):
+		date_range_end.append(re)
+	
+	# Iterate over all columns and read in data fields
+	for metric in columns_to_plot:
 		value = line[metric + 1]
-		if data_headers[metric + 1] == 'Net MRR':
-			data_index_second_axis = metric
-		measures_to_plot[metric].append(float(value.replace(',', '')))
+		measures_to_plot[metric].append(float(value.replace(',', ''))) # Strip out commas from numeric values and convert to float
 		
 fdts = dates.date2num(date_range_end) # Convert dates to numbers
 hfmt = dates.DateFormatter('%b %d') # Format dates
