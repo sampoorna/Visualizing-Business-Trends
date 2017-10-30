@@ -81,26 +81,36 @@ if overlay_events_flag == 'y':
 			print "Could not find file. Please ensure that file exists and file name was correctly input - remember, the name is case sensitive!"
 			
 invalid_response = True
+plot_from_start = True
 
 while (invalid_response):
-	plot_date_start = raw_input("Plot data on the graph from date (DD/MM/YY): ")
+	plot_date_start = raw_input("Plot data on the graph from date (DD/MM/YY). Type '/' to use the start of the data file: ")
 	
-	try: 
-		plot_date_start = parse(plot_date_start)
-		invalid_response = False
-	except:
-		print "Input does not appear to be a date :S Please try again!"
+	if plot_date_start == '/':
+		plot_from_start = True
+		print "Plotting from the beginning of the data file..."
+	else:
+		try: 
+			plot_date_start = parse(plot_date_start)
+			invalid_response = False
+		except:
+			print "Input does not appear to be a date :S Please try again!"
 		
 invalid_response = True
+plot_till_end = True
 
 while (invalid_response):
-	plot_date_end = raw_input("Plot data on the graph till date (DD/MM/YY): ")
+	plot_date_end = raw_input("Plot data on the graph till date (DD/MM/YY). Type '/' to plot till the end of the data file: ")
 	
-	try: 
-		plot_date_end = parse(plot_date_end)
-		invalid_response = False
-	except:
-		print "Input does not appear to be a date :S Please try again!"
+	if plot_date_end == '/':
+		plot_till_end = True
+		print "Plotting till the end of the data file..."
+	else:
+		try: 
+			plot_date_end = parse(plot_date_end)
+			invalid_response = False
+		except:
+			print "Input does not appear to be a date :S Please try again!"
 		
 # Ask user which metric to plot on which axis
 print "Found following data headers: "
@@ -136,9 +146,10 @@ for line in stats:
 	rs = parse(line[date_column_index].split('-')[0].strip())
 	re = parse(line[date_column_index].split('-')[1].strip())
 	
-	if (rs >= plot_date_start):
+	if plot_from_start or rs >= plot_date_start:
 		date_range_start.append(rs)
-	if (re <= plot_date_end):
+	
+	if plot_till_end or (re <= plot_date_end):
 		date_range_end.append(re)
 	
 	# Iterate over all columns and read in data fields
@@ -212,9 +223,9 @@ if overlay_events_flag == 'y': # If overlaying events
 		else:
 			re = parse(line[indexes['End Date']].strip()) 
 		
-		if (rs >= plot_date_start):
+		if (plot_from_start or rs >= plot_date_start):
 			date_range_start_events.append(rs)
-		if (re <= plot_date_end):
+		if (plot_till_end or re <= plot_date_end):
 			date_range_end_events.append(re)
 		
 		# Assign marker colours according to degree of severity
