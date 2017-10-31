@@ -140,7 +140,7 @@ y_label = 'Number of '
 
 colours = ['purple', 'teal', 'orchid', 'C3', 'C4', 'C5']
 markers = ['+', 'o', '*', '+', 'o', '*']
-data_legends = data_headers[1:]
+data_legends = data_headers
 
 # Parse and process data
 for line in stats:
