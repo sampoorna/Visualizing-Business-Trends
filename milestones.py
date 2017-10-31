@@ -88,6 +88,7 @@ while (invalid_response):
 	
 	if plot_date_start == '/':
 		plot_from_start = True
+		invalid_response = False
 		print "Plotting from the beginning of the data file..."
 	else:
 		try: 
@@ -104,6 +105,7 @@ while (invalid_response):
 	
 	if plot_date_end == '/':
 		plot_till_end = True
+		invalid_response = False
 		print "Plotting till the end of the data file..."
 	else:
 		try: 
@@ -154,8 +156,8 @@ for line in stats:
 	
 	# Iterate over all columns and read in data fields
 	for metric in columns_to_plot:
-		value = line[metric + 1]
-		measures_to_plot[metric].append(float(value.replace(',', ''))) # Strip out commas from numeric values and convert to float
+		value = line[metric]
+		measures_to_plot[metric].append(float(value.replace(',', '').replace('$', ''))) # Strip out commas from numeric values and convert to float
 		
 fdts = dates.date2num(date_range_end) # Convert dates to numbers
 hfmt = dates.DateFormatter('%b %d') # Format dates
@@ -166,6 +168,7 @@ if not first_axis_only:
 	ax2 = ax.twinx()
 
 for metric in range(len(data_headers) - 1):
+	print len(fdts), len(measures_to_plot[metric])
 	result = curve_fit(fdts, measures_to_plot[metric]) # Fit curve to data points to estimate trend
 	if not first_axis_only and metric in second_axis_columns:
 		ax2.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
