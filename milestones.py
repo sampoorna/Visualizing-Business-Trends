@@ -127,14 +127,14 @@ second_axis_columns = [int(i) - 1 for i in second_axis_columns.split(' ')]
 
 if second_axis_columns[0] == -1:
 	first_axis_only = True
-	columns_to_plot = set().union(first_axis_columns, second_axis_columns)
+	columns_to_plot = first_axis_columns
 else:
 	first_axis_only = False
-	columns_to_plot = first_axis_columns
+	columns_to_plot = list(set().union(first_axis_columns, second_axis_columns))
 
 date_range_start = []
 date_range_end = []
-measures_to_plot = [[] for i in range(len(data_headers) - 1)] # Initialize array to appropriate size
+measures_to_plot = [[] for i in range(len(data_headers))] # Initialize array to appropriate size
 data_index_second_axis = -1
 y_label = 'Number of '
 
@@ -167,8 +167,8 @@ ax = fig.add_subplot(111)
 if not first_axis_only:
 	ax2 = ax.twinx()
 
-for metric in range(len(data_headers) - 1):
-	print len(fdts), len(measures_to_plot[metric])
+for metric in columns_to_plot:
+
 	result = curve_fit(fdts, measures_to_plot[metric]) # Fit curve to data points to estimate trend
 	if not first_axis_only and metric in second_axis_columns:
 		ax2.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
