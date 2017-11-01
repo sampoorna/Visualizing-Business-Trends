@@ -159,8 +159,8 @@ for line in stats:
 		value = line[metric]
 		measures_to_plot[metric].append(float(value.replace(',', '').replace('$', ''))) # Strip out commas from numeric values and convert to float
 		
-fdts = dates.date2num(date_range_end) # Convert dates to numbers
-hfmt = dates.DateFormatter('%b %d') # Format dates
+dates = dates.date2num(date_range_end) # Convert dates to numbers
+formatted_dates = dates.DateFormatter('%b %d') # Format dates
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
@@ -169,30 +169,30 @@ if not first_axis_only:
 
 for metric in columns_to_plot:
 
-	result = curve_fit(fdts, measures_to_plot[metric]) # Fit curve to data points to estimate trend
+	result = curve_fit(dates, measures_to_plot[metric]) # Fit curve to data points to estimate trend
 	if not first_axis_only and metric in second_axis_columns:
-		ax2.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
+		ax2.plot(dates, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
 		ax2.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
 	else:
-		ax.plot(fdts, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
+		ax.plot(dates, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
 		ax.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
 		y_label += data_legends[metric].lower() + ', ' # Construct label for Y axis
 
 ### Graph legends etc
 ax.set_xlabel('Week ending in') # Setting X axis label
-plt.xticks(fdts) # Place X axis ticks for every week
-ax.xaxis.set_major_formatter(hfmt) # Format X tick labels
+plt.xticks(dates) # Place X axis ticks for every week
+ax.xaxis.set_major_formatter(formatted_dates) # Format X tick labels
 ax.set_ylabel('Dollar amounts') # Setting Y axis label: remove the last comma
 
 if not first_axis_only:
 	ax2.set_ylabel(y_label[:-2] + " (weekly)") # Setting the second Y axis label
 
 # Place legends on the graph
-ax.legend(loc = 6)
+ax.legend(loc=6)
 ax.set_ylim(ymin=0)
 
 if not first_axis_only:
-	ax2.legend(loc = 2)
+	ax2.legend(loc=2)
 	ax2.set_ylim(ymin=0)
 
 if overlay_events_flag == 'y': # If overlaying events
@@ -208,23 +208,33 @@ if overlay_events_flag == 'y': # If overlaying events
 	colormap = []
 	indexes = {}
 	
+	# Ask user which metric to plot on which axis
+	print "Found following data headers: "
+	for i in range(len(event_data_headers)):
+		print "(" + str(i + 1) + ") " + event_data_headers[i]
+
+	severity_column_index = input("Choose column that contains severity values (on a scale of -3 to 3): ") - 1
+	milestones_column_index = input("Choose column that contains event descriptions/names: ") - 1
+	start_date_column_index = input("Choose column that has start date for event: ") - 1
+	end_date_column_index = input("Choose column that has end date for event: ") - 1
+	
 	# To use header names to index
 	for h in range(len(event_data_headers)):
 		indexes[event_data_headers[h]] = h
 	
 	# Sort events by degree of severity
 	event_data = list(event_data)
-	event_data.sort(key=lambda x: int(x[indexes['Severity']]))
+	event_data.sort(key=lambda x: int(x[severity_column_index]))
 
 	# Parse and process data
 	for line in stats:
 		# Parse date fields as dates
-		rs = parse(line[indexes['Start Date']].strip())
+		rs = parse(line[start_date_column_index].strip())
 		print rs
-		if line[indexes['End Date']].strip().lower() == "ongoing":
+		if line[end_date_column_index].strip().lower() == "ongoing":
 			re = rs
 		else:
-			re = parse(line[indexes['End Date']].strip()) 
+			re = parse(line[end_date_column_index].strip()) 
 		
 		if (plot_from_start or rs >= plot_date_start):
 			date_range_start_events.append(rs)
@@ -232,36 +242,36 @@ if overlay_events_flag == 'y': # If overlaying events
 			date_range_end_events.append(re)
 		
 		# Assign marker colours according to degree of severity
-		classes.append(line[indexes['Severity']])
-		if line[indexes['Severity']] == '1':
+		classes.append(line[severity_column_index])
+		if line[severity_column_index] == '1':
 			colormap.append('yellowgreen')
-		elif line[indexes['Severity']] == '2':
+		elif line[severity_column_index] == '2':
 			colormap.append('lightgreen')
-		elif line[indexes['Severity']] == '3':
+		elif line[severity_column_index] == '3':
 			colormap.append('lime')
-		elif line[indexes['Severity']] == '0':
+		elif line[severity_column_index] == '0':
 			colormap.append('black')
-		elif line[indexes['Severity']] == '-1':
+		elif line[severity_column_index] == '-1':
 			colormap.append('gold')
-		elif line[indexes['Severity']] == '-2':
+		elif line[severity_column_index] == '-2':
 			colormap.append('orange')
-		elif line[indexes['Severity']] == '-3':
+		elif line[severity_column_index] == '-3':
 			colormap.append('red')
 		
 		# Y axis position of markers
 		add += 10
 		y_coord = init_y + add
 		y.append(y_coord)
-		milestones.append(line[indexes['Milestones']])
+		milestones.append(line[milestones_column_index])
 		
 		if rs == re: # If same start and end date, set marker to a single point
-			ax2.plot(rs, y_coord, marker = 'd', color = colormap[-1], label = line[indexes['Milestones']])
+			ax2.plot(rs, y_coord, marker = 'd', color = colormap[-1], label = line[milestones_column_index])
 		elif (re - rs).days > 3: # If long duration events, place text on the graph itself
-			ax2.text(dates.date2num(re) + 1, y_coord, line[indexes['Milestones']], fontsize=7)
+			ax2.text(dates.date2num(re) + 1, y_coord, line[milestones_column_index], fontsize=7)
 
 	fdts_start = dates.date2num(range_start_ms) # Convert start dates to numbers
 	fdts_end = dates.date2num(range_end_ms) # Convert end dates to numbers
-	hfmt = dates.DateFormatter('%b %d') # Format dates
+	formatted_dates = dates.DateFormatter('%b %d') # Format dates
 	for hl in range(len(y)): # Draw lines matching duration of events
 		ax2.hlines(y[hl], fdts_start[hl], fdts_end[hl], colors = colormap[hl], linewidth = 3, label = milestones[hl])
 	last = ''
