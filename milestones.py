@@ -159,7 +159,7 @@ for line in stats:
 		value = line[metric]
 		measures_to_plot[metric].append(float(value.replace(',', '').replace('$', ''))) # Strip out commas from numeric values and convert to float
 		
-dates = dates.date2num(date_range_end) # Convert dates to numbers
+x_axis_dates = dates.date2num(date_range_end) # Convert dates to numbers
 formatted_dates = dates.DateFormatter('%b %d') # Format dates
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -169,18 +169,18 @@ if not first_axis_only:
 
 for metric in columns_to_plot:
 
-	result = curve_fit(dates, measures_to_plot[metric]) # Fit curve to data points to estimate trend
+	result = curve_fit(x_axis_dates, measures_to_plot[metric]) # Fit curve to data points to estimate trend
 	if not first_axis_only and metric in second_axis_columns:
-		ax2.plot(dates, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
+		ax2.plot(x_axis_dates, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
 		ax2.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
 	else:
-		ax.plot(dates, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
+		ax.plot(x_axis_dates, measures_to_plot[metric], label = data_legends[metric], marker = markers[metric], color = colours[metric], linewidth = 1) # Plot raw data points
 		ax.plot(result[0], result[1], label = 'Estimated ' + data_legends[metric], linestyle = '--', color = colours[metric], linewidth = 3) # Plot trend curve
 		y_label += data_legends[metric].lower() + ', ' # Construct label for Y axis
 
 ### Graph legends etc
 ax.set_xlabel('Week ending in') # Setting X axis label
-plt.xticks(dates) # Place X axis ticks for every week
+plt.xticks(x_axis_dates) # Place X axis ticks for every week
 ax.xaxis.set_major_formatter(formatted_dates) # Format X tick labels
 ax.set_ylabel('Dollar amounts') # Setting Y axis label: remove the last comma
 
@@ -227,7 +227,7 @@ if overlay_events_flag == 'y': # If overlaying events
 	event_data.sort(key=lambda x: int(x[severity_column_index]))
 
 	# Parse and process data
-	for line in stats:
+	for line in event_data:
 		# Parse date fields as dates
 		rs = parse(line[start_date_column_index].strip())
 		print rs
@@ -269,11 +269,12 @@ if overlay_events_flag == 'y': # If overlaying events
 		elif (re - rs).days > 3: # If long duration events, place text on the graph itself
 			ax2.text(dates.date2num(re) + 1, y_coord, line[milestones_column_index], fontsize=7)
 
-	fdts_start = dates.date2num(range_start_ms) # Convert start dates to numbers
-	fdts_end = dates.date2num(range_end_ms) # Convert end dates to numbers
+	fdts_start = dates.date2num(date_range_start_events) # Convert start dates to numbers
+	fdts_end = dates.date2num(date_range_end_events) # Convert end dates to numbers
 	formatted_dates = dates.DateFormatter('%b %d') # Format dates
 	for hl in range(len(y)): # Draw lines matching duration of events
 		ax2.hlines(y[hl], fdts_start[hl], fdts_end[hl], colors = colormap[hl], linewidth = 3, label = milestones[hl])
+	print len(y)
 	last = ''
 	ax2.set_ylim(ymax=y[-1]+30)
 	fig.canvas.mpl_connect('motion_notify_event', onpick3) # Function to show labels on mouse over
