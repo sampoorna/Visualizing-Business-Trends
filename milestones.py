@@ -43,7 +43,7 @@ overlay_events_flag = 's'
 invalid_response = True
 
 while (invalid_response):
-	overlay_events_flag = raw_input("Overlay event information? (Y/N)").lower()
+	overlay_events_flag = raw_input("Overlay event information? (Y/N) ").lower()
 	if (overlay_events_flag != 'y' and overlay_events_flag != 'n'):
 		invalid_response = True
 	else:

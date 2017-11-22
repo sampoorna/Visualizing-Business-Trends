@@ -11,9 +11,19 @@ Getting started:
 - Open your preferred command line interface
 - Navigate to the folder with the script and data files
 - Run script: `python milestones.py`
-- When prompted, enter `y` to overlay important events on the timeline, or enter `n` to skip
-- When prompted, enter the names of the data files, and the columns corresponding to the different data types
-- Note that if you choose to overlay the event info on the timeline graph, events with a duration of 2 days or longer show up on the graph along with their name or a short description, and shorter-duration events only show up as markers, that display the name when hovering over the marker
+- Follow the prompts and type in the following values
+  - `y` (or `n` to skip)
+  - `MRR.csv`
+  - `Milestone updated.csv`
+  - `/`
+  - `/`
+  - `1`
+  - `2`
+  - `3 4`
+  - `2`
+  - `4`
+  - `3`
+  - `5`
 
 Data file specifications:
 ------------------------
