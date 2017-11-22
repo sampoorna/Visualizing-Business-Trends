@@ -11,23 +11,19 @@ Getting started:
 - Open your preferred command line interface
 - Navigate to the folder with the script and data files
 - Run script: `python milestones.py`
-- Follow the prompts and type in the following values
-  - `y` (or `n` to skip)
-  - `MRR.csv`
-  - `Milestone updated.csv`
-  - `/`
-  - `/`
-  - `1`
-  - `2`
-  - `3 4`
-  - `2`
-  - `4`
-  - `3`
-  - `5`
+- When prompted, enter `y` to overlay important events on the timeline, or enter `n` to skip
+- When prompted, enter the names of the data files, and the columns corresponding to the different data types
+- Note that if you choose to overlay the event info on the timeline graph, events with a duration of 2 days or longer show up on the graph along with their name or a short description, and shorter-duration events only show up as markers, that display the name when hovering over the marker
 
-Data file specifications
+Data file specifications:
 ------------------------
 - Ensure that all columns have a header
-- File containing business' performance metrics must have at least one column of numeric data that is to be plotted
-- Plots are along a timeline, on a per week basis, so ensure that each record has a 'Date range' column with a start date and an end date for the week
-- Events are classified as strongly negative (-3) and strongly positive (3) and colour-coded on a red to green spectrum
+
+- For the file containing business' performance metrics
+  - There must be at least one column of numeric data that is to be plotted
+  - Plots are along a timeline, on a per week basis, so ensure that each record has a 'Date range' column with a start date and an end date for the week
+
+- For the file containing event data
+  - Events should be classified as strongly negative (-3) and strongly positive (3), which is then represented on a red to green spectrum on the graph
+  - Plots are along a timeline, on a per week basis, so ensure that each record has a 'Date range' column with a start date and an end date for the week
+  - There should be a column containing the name or a short description of the event that can be displayed on the graph
