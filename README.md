@@ -9,10 +9,21 @@ Getting started:
 ----------------
 - Download the script and sample files
 - Open your preferred command line interface
- - Navigate to the folder with the script and data files
- - Run script: `python milestones.py`
- - When prompted, enter `y` to overlay important events on the timeline, or enter `n` to skip
- - When prompted, enter the names of the data files
+- Navigate to the folder with the script and data files
+- Run script: `python milestones.py`
+- Follow the prompts and type in the following values
+  - `y` (or `n` to skip)
+  - `MRR.csv`
+  - `Milestone updated.csv`
+  - `/`
+  - `/`
+  - `1`
+  - `2`
+  - `3 4`
+  - `2`
+  - `4`
+  - `3`
+  - `5`
 
 Data file specifications
 ------------------------
